@@ -122,8 +122,60 @@ TO_DIGITS = Y[-> f {
               }
             }]
 
+CHARS   = "abcdefghijklmnopqrstuvwxyz"
+CHARSET = "0123456789" + CHARS + CHARS.upcase
+
+CHARSET.chars.entries.each_with_index do |c, i|
+  from_integer_to_str = -> n {
+    n.zero? ? "ZERO" : "SUCC[#{from_integer_to_str[n-1]}]"
+  }
+
+  eval "CHAR_#{c} = #{from_integer_to_str[i]}"
+end
+
+# FizzBuzz, baby, ya!
+FIZZ =
+  CONS[CHAR_F][
+  CONS[CHAR_i][
+  CONS[CHAR_z][
+  CONS[CHAR_z][
+          NIL]]]]
+
+BUZZ =
+  CONS[CHAR_B][
+  CONS[CHAR_u][
+  CONS[CHAR_z][
+  CONS[CHAR_z][
+          NIL]]]]
+
+FIVE    = ADD[TWO][THREE]
+FIFTEEN = MUL[THREE][FIVE]
+HUNDRED = MUL[TEN][TEN]
+
+
+FIZZBUZZ =
+  -> m { MAP[-> n {
+    IF[IS_ZERO[MOD[n][FIFTEEN]]][
+      APPEND[FIZZ][BUZZ]
+    ][IF[IS_ZERO[MOD[n][THREE]]][
+      FIZZ
+    ][IF[IS_ZERO[MOD[n][FIVE]]][
+      BUZZ
+    ][
+      TO_DIGITS[n]
+    ]]]
+  }][RANGE[ONE][m]] }
+
 
 # FFI
+def to_char(n)
+  CHARSET[to_integer(n)]
+end
+
+def to_string(l)
+  to_array(l).map(&method(:to_char)).join
+end
+
 def to_array(l)
   array = []
 
@@ -136,7 +188,7 @@ def to_array(l)
 end
 
 def from_array(array)
-  list = array.reverse.inject(NIL) { |l,x| CONS[x][l] }
+  array.inject(NIL) { |l,x| PUSH[x][l] }
 end
 
 def to_boolean(bool)
