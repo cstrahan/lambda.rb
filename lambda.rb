@@ -13,6 +13,7 @@ IF    = I
 NOT   = -> b { -> x { -> y { b[y][x] } } }
 AND   = -> a { -> b { a[b][a] } }
 OR    = -> a { -> b { a[a][b] } }
+XOR   = -> m { -> n { -> a { -> b { m[n[b][a]][n[a][b]] } } } }
 TRUE  = K
 FALSE = NOT[TRUE]
 
