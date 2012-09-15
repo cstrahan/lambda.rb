@@ -40,13 +40,6 @@ class Parser
   def parse_definition
     name = consume(:IDENT).to_sym
     consume(:ASSIGN)
-    #case peek()[0]
-    #when :IDENT
-      #_, ref = next_token
-      #@defs[name] = [:deref, ref]
-    #when :LAMBDA
-      #@defs[name] = parse_abstraction
-    #end
     @defs[name] = parse_expression
   end
 
