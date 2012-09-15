@@ -69,12 +69,8 @@ class Parser
       end
     end
 
-    if exprs.size == 1
-      exprs.first
-    else
-      exprs.reduce do |acc, n|
-        [:call, acc, n]
-      end
+    exprs.reduce do |acc, n|
+      [:call, acc, n]
     end
   end
 
