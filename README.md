@@ -11,6 +11,9 @@ repository contains the following goodies:
 * YARV bytecode compiler (applicative order evaluation)
 * AST pretty-printer
 
+***NOTE:*** Take a look in `/examples` for a full FizzBuzz implementation written in the
+λ-calculus! Now **that's** what I call esoterrorism.
+
 Syntax
 ------
 
