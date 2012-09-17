@@ -5,7 +5,7 @@ About
 -----
 
 These are some of my experiments with the lambda calculus. This
-repository consists of the following goodies:
+repository contains the following goodies:
 
 * λ-calculus parser
 * YARV bytecode compiler (applicative order evaluation)
