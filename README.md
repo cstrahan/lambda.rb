@@ -74,7 +74,7 @@ The bytecode compiler translates a given AST into a
 `RubyVM::InstructionSequence`. Here's the instruction sequence given the
 AST for the U combinator (`λx.x x`):
 
-```
+```ruby
 # AST
 [:fn, :x,
   [:call,
