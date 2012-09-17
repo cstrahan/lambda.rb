@@ -50,7 +50,7 @@ of three kinds of nodes:
 * `[:call, FN, ARG]` - function application
 * `[:deref, VAR_NAME]` - variable access
 
-As a concrete example, here's the AST for a church-encoded pair: 
+As a concrete example, here's the AST for a Church-encoded pair: 
 
 ```
 λx.λy.λf.f x y
