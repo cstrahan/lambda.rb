@@ -16,7 +16,7 @@ end
 
 class Compiler
   def compile ast
-    code = _compile(ast) + [[:leave]]
+    code = _compile(ast, {}) + [[:leave]]
     iseq = [
       "YARVInstructionSequence/SimpleDataFormat", 2, 0, 1, {},
       "<compiled>", "<compiled>", nil, 1, :top, [], 0, [],
@@ -25,7 +25,7 @@ class Compiler
     RubyVM::InstructionSequence.load iseq
   end
 
-  def _compile ast, args={}
+  def _compile ast, args
     node_type = ast[0]
 
     case node_type
@@ -41,7 +41,7 @@ class Compiler
       arg_name = ast[1]
 
       [
-        [:getdynamic, 2, args[arg_name]]
+        [:getdynamic, 2, args.fetch(arg_name)]
       ]
     when :fn
       param_name = ast[1]

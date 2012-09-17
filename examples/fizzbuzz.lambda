@@ -1,0 +1,146 @@
+# Basic combinators
+K := λx.λy.x
+I := λx.x
+C := λx.λy.λz.x z y
+T := C I
+U := λf.f f
+Y := λg.U λf.λx.g (U f) x
+
+# Boolean
+IF    := I
+NOT   := λb.λx.λy.b y x
+AND   := λa.λb.a b a
+OR    := λa.λb.a a b
+XOR   := λm.λn.λa.λb.m (n b a) (n a b)
+TRUE  := λx.λy.x
+FALSE := NOT TRUE
+
+# Predicates
+IS_ZERO := λn.n (λx.FALSE) TRUE
+IS_LEQ  := λm.λn.IS_ZERO (SUB m n)
+IS_LT   := λm.λn.IS_LEQ (SUCC m) n
+IS_GT   := NOT IS_LT
+IS_GEQ  := NOT IS_LEQ
+IS_EQ   := λm.λn.AND (IS_LEQ m n) (IS_LEQ n m)
+IS_NEQ  := λm.λn.NOT (IS_EQ m n)
+
+# Natural numbers
+ZERO  := FALSE
+ONE   := λf.λx.f x
+TWO   := λf.λx.f (f x)
+THREE := λf.λx.f (f (f x))
+
+# Maths
+SUCC    := λn.λf.λx.f (n f x)
+SHFTINC := λp.PAIR (SND p) (SUCC (SND p))
+PRED    := λn.FST (n SHFTINC (PAIR ZERO ZERO))
+
+ADD := λm.λn.n SUCC m
+SUB := λm.λn.n PRED m
+MUL := λm.λn.n (ADD m) ZERO
+FACTORIAL := Y λf.
+               λn.
+                 IF (IS_ZERO n)(
+                   ONE
+                 )(
+                   λ_.MUL n (f (PRED n)) _
+                 )
+
+DIV := Y λf.
+         λm.λn.
+           IF (IS_LEQ n m)(
+             λ_.SUCC (f (SUB m n) n) _
+           )(
+             ZERO
+           )
+
+MOD := Y λf.
+         λm.λn.
+           IF (IS_LEQ n m)(
+             λ_.f (SUB m n) n _
+           )(
+             m
+           )
+
+# Pairs
+PAIR := λx.λy.λf.f x y
+FST  := λp.p TRUE
+SND  := λp.p FALSE
+
+# Lists
+NIL    := λf.λx.x
+CONS   := λx.λl.λf.λy.f x (l f y)
+IS_NIL := λk.k (λx.λl.FALSE) TRUE
+HEAD   := λk.k (λx.λl.x) NIL
+TAIL   := λl.FST (l (λx.λp.PAIR (SND p) (CONS x (SND p))) (PAIR NIL NIL))
+
+RANGE := Y λf.
+           λm.λn.
+             IF (IS_LEQ m n)(
+               λ_.CONS m (f (SUCC m) n) _
+             )(
+               NIL
+             )
+
+MAP   := λf.FOLDR (λx.CONS (f x)) NIL
+FOLDR := λf.λx.λl.l f x
+FOLDL := Y λf.
+           λg.λx.λl.
+             IF (IS_NIL l)(
+               x
+             )(
+               λ_.f g (g (HEAD l) x) (TAIL l) _
+             )
+
+REVERSE := FOLDL CONS NIL
+
+SUM     := FOLDL ADD ZERO
+PRODUCT := FOLDL MUL ONE
+APPEND  := λk.λl.FOLDR CONS l k
+PUSH    := λx.λl.APPEND l (CONS x NIL)
+
+# Strings
+TEN       := SUCC (MUL THREE THREE)
+RADIX     := TEN
+TO_DIGITS := Y λf.
+               λn.
+                 PUSH (MOD n RADIX)(
+                   IF (IS_LEQ n (PRED RADIX))(
+                     NIL
+                   )(
+                     λ_.f (DIV n RADIX) _
+                   )
+                 )
+
+# FizzBuzz, baby, ya!
+FIZZ :=
+  CONS CHAR_F
+ (CONS CHAR_i
+ (CONS CHAR_z
+ (CONS CHAR_z
+         (NIL))))
+
+BUZZ :=
+  CONS CHAR_B
+ (CONS CHAR_u
+ (CONS CHAR_z
+ (CONS CHAR_z
+          NIL)))
+
+FIVE    := ADD TWO THREE
+FIFTEEN := MUL THREE FIVE
+HUNDRED := MUL TEN TEN
+
+
+FIZZBUZZ :=
+  λm.MAP (λn.
+    IF (IS_ZERO (MOD n FIFTEEN)(
+      APPEND FIZZ BUZZ
+    )(IF (IS_ZERO (MOD n THREE))(
+      FIZZ
+    )(IF (IS_ZERO (MOD n FIVE))(
+      BUZZ
+    )(
+      TO_DIGITS n
+    ))))
+  ) (RANGE ONE m)

@@ -2,9 +2,16 @@ require 'set'
 require './tokenizer'
 
 class Parser
-  def parse code
+  def definitions
+    @defs
+  end
+
+  def initialize
+    @defs = {}
+  end
+
+  def parse_definitions code
     @tokenizer = Tokenizer.new code
-    @defs      = {}
 
     while @tokenizer.peek
       parse_definition
@@ -19,7 +26,19 @@ class Parser
     @defs
   end
 
-  def resolve_refs(parent_node, index, bound)
+  def parse_expression code
+    @tokenizer = Tokenizer.new code
+
+    ast = parse_expr
+    cell = [ast]
+    resolve_refs(cell, 0, Set.new)
+
+    cell[0]
+  end
+
+  private
+
+  def resolve_refs parent_node, index, bound
     child_node = parent_node[index]
 
     case child_node[0]
@@ -37,10 +56,14 @@ class Parser
     end
   end
 
+  def parse_ref
+    [:deref, consume(:IDENT).to_sym]
+  end
+
   def parse_definition
     name = consume(:IDENT).to_sym
     consume(:ASSIGN)
-    @defs[name] = parse_expression
+    @defs[name] = parse_expr
   end
 
   def parse_abstraction
@@ -48,14 +71,14 @@ class Parser
     arg_name = consume(:IDENT)
     consume(:PERIOD)
 
-    [:fn, arg_name.to_sym, parse_expression]
+    [:fn, arg_name.to_sym, parse_expr]
   end
 
-  def parse_expression
+  def parse_expr
     exprs = []
 
     while start_of_expression?
-      type  = peek()[0]
+      type  = peek.first
 
       case type
       when :IDENT
@@ -64,7 +87,7 @@ class Parser
         exprs << parse_abstraction
       when :LPAREN
         consume(:LPAREN)
-        exprs << parse_expression
+        exprs << parse_expr
         consume(:RPAREN)
       end
     end
@@ -75,9 +98,9 @@ class Parser
   end
 
   def start_of_expression?
-    return false unless peek(0)
+    return false unless peek
 
-    type = peek(0)[0]
+    type = peek.first
 
     (type == :LPAREN ||
      type == :IDENT  ||
@@ -90,14 +113,7 @@ class Parser
     peek(1)[0] == :ASSIGN
   end
 
-  def parse_ref
-    name = consume(:IDENT)
-    [:deref, name.to_sym]
-  end
-
-  private
-
-  def peek(n=0)
+  def peek n=0
     @tokenizer.peek(n)
   end
 
@@ -105,9 +121,11 @@ class Parser
     @tokenizer.next_token
   end
 
-  def consume(expected)
-    type, value = next_token
-    raise "expected #{expected} token; got #{type} token" unless type == expected
+  def consume expected
+    type, value, line, col = next_token
+    unless type == expected
+      raise "parse error at [#{line}, #{col}]; expected #{expected.inspect} token; got #{type.inspect} token"
+    end
 
     value
   end
